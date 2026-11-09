@@ -3,3 +3,5 @@ echo "working"
 
 pwd
 ls -lh
+
+##add notes
