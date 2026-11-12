@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shell Lesson — Data Explorations</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #0a0e17;
+  color: #e2e8f0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.container {
+  max-width: 700px;
+  width: 100%;
+  padding: 40px 24px;
+  text-align: center;
+}
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 40px;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  text-align: left;
+}
+@media (min-width: 560px) {
+  .card-grid { grid-template-columns: 1fr 1fr; }
+}
+.card {
+  background: #111827;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+}
+.card .icon {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+.card h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+.card p {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+.card .tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: auto;
+  width: fit-content;
+}
+.tag-green { background: #065f46; color: #6ee7b7; }
+.tag-blue { background: #1e3a5f; color: #93c5fd; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Shell Lesson — Data Explorations</h1>
+  <p class="subtitle">Interactive datasets built for the Unix / Git / R workshop</p>
+
+  <div class="card-grid">
+    <a class="card" href="gapminder-explorer.html">
+      <div class="icon">🌍</div>
+      <h2>Gapminder Explorer</h2>
+      <p>Explore 142 countries across 12 time points (1952&ndash;2007). Bubble charts, trends over time, and sortable data tables for GDP, life expectancy, and population.</p>
+      <span class="tag tag-green">1,704 data points</span>
+    </a>
+
+    <a class="card" href="north-pacific-gyre/">
+      <div class="icon">🧫</div>
+      <h2>North Pacific Gyre</h2>
+      <p>Raw "goo" measurement data from 10 marine samples with A/B replicates. Includes shell scripts for analysis. Best explored with the command line.</p>
+      <span class="tag tag-blue">17 files &middot; 5,040 values</span>
+    </a>
+  </div>
+</div>
+</body>
+</html>
