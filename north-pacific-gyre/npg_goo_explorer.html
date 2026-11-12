@@ -175,15 +175,15 @@ function renderSidebar() {
   const groups = groupFiles();
   let html = '';
   Object.entries(groups).forEach(([num, files]) => {
-    html += `<div class="file-group"><div class="file-group-title">Sample ${{num}}</div>`;
+    html += `<div class="file-group"><div class="file-group-title">Sample ${num}</div>`;
     files.forEach(name => {
       const s = getSuffix(name);
       const isSuspect = SUSPECT[name] !== undefined;
       const sel = selectedFile === name ? 'selected' : '';
-      html += `<div class="file-item ${{sel}} ${{isSuspect ? 'suspect' : ''}}" onclick="selectFile('${name}')">
+      html += `<div class="file-item ${sel} ${isSuspect ? 'suspect' : ''}" onclick="selectFile('${name}')">
         <span class="suffix-badge badge-${s}">${s}</span>
-        ${{name}}
-        ${{isSuspect ? '<span class="suspect-icon">⚠️</span>' : ''}}
+        ${name}
+        ${isSuspect ? '<span class="suspect-icon">⚠️</span>' : ''}
       </div>`;
     });
     html += '</div>';
