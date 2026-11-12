@@ -177,6 +177,32 @@
   .footer{
     text-align:center;color:var(--muted);font-size:11.5px;padding:8px 12px 4px;
   }
+  /* Tab bar */
+  .tabbar{display:flex;gap:4px;padding:0 16px;margin-bottom:4px}
+  .tabbtn{
+    padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;
+    background:var(--panel);color:var(--muted);
+    border:1px solid var(--line);border-bottom:none;
+    border-radius:8px 8px 0 0;transition:all .15s;
+  }
+  .tabbtn:hover{background:var(--panel2);color:var(--text)}
+  .tabbtn.active{background:var(--panel2);color:var(--text);border-color:var(--accent)}
+  /* Trends view */
+  .trends-view{padding:0 16px}
+  .trends-view .card{margin-top:0}
+  .trends-picker .sel-chip{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:3px 10px;border-radius:12px;font-size:12px;
+    background:#20264c;border:1px solid var(--accent);
+  }
+  .trends-picker .sel-chip .rm{cursor:pointer;opacity:.6;font-size:11px;margin-left:2px}
+  .trends-picker .sel-chip .rm:hover{opacity:1}
+  .trends-picker .dd-item{
+    padding:6px 12px;font-size:13px;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+  }
+  .trends-picker .dd-item:hover{background:#20264c}
+  .trends-picker .dd-item.selected{background:#2a2a5a;color:var(--accent)}
   @media (max-width:1100px){
     .grid{grid-template-columns:1fr}
     .stats{grid-template-columns:repeat(3,1fr)}
@@ -293,8 +319,14 @@ The file input should be prominent at the top with a "📂 Load gapminder-data.c
     <div style="margin-left:auto" class="hint">Hover bubbles for details · toggle continents in legend</div>
   </section>
 
+  <!-- Tab bar -->
+  <section class="tabbar" role="tablist">
+    <button class="tabbtn active" data-tab="dashboard" role="tab" aria-selected="true">📊 Dashboard</button>
+    <button class="tabbtn" data-tab="trends" role="tab" aria-selected="false">📈 Trends over Time</button>
+  </section>
+
   <!-- Main grid -->
-  <section class="grid">
+  <section class="grid" id="view-dashboard">
 
     <!-- LEFT column: scatter + table -->
     <div class="col">
@@ -344,21 +376,44 @@ The file input should be prominent at the top with a "📂 Load gapminder-data.c
         </div>
         <div class="body"><canvas id="bar" height="340"></canvas></div>
       </div>
-
-      <div class="card">
-        <div class="head">
-          <h2>Metric over Time</h2>
-          <div class="spacer hint" id="lineMetricName"></div>
-        </div>
-        <div class="body">
-          <div class="multiselect" id="lineCountryList" aria-label="Countries to plot"></div>
-          <div style="height:10px"></div>
-          <canvas id="line" height="320"></canvas>
-          <div class="hint" style="padding-top:6px">Click a country chip to toggle (up to 5). Color matches the country's continent.</div>
-        </div>
-      </div>
     </div>
 
+  </section>
+
+  <!-- Trends view (full width, shown when Trends tab is active) -->
+  <section class="trends-view" id="view-trends" style="display:none">
+    <div class="card" style="margin-bottom:16px">
+      <div class="head">
+        <h2>Metric over Time (1952–2007)</h2>
+        <div class="spacer hint" id="lineMetricName"></div>
+      </div>
+      <div class="body">
+        <div class="trends-controls" style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap">
+          <div class="trends-picker" style="flex:1;min-width:280px;max-width:400px">
+            <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">
+              Countries to compare <span class="hint" style="font-weight:400">(max 5)</span>
+            </label>
+            <div id="trendsSelected" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:30px"></div>
+            <input type="text" id="trendsSearch" placeholder="Search countries…"
+              style="width:100%;padding:8px 12px;background:#141428;border:1px solid var(--line);border-radius:6px;color:var(--text);font-size:13px">
+            <div id="trendsDropdown" style="max-height:200px;overflow-y:auto;border:1px solid var(--line);border-radius:6px;background:#141428;margin-top:4px;display:none">
+            </div>
+          </div>
+          <div class="trends-quick" style="flex:1;min-width:200px">
+            <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Quick presets</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <button class="chip" data-preset="top5" style="cursor:pointer">🌍 Top 5 by Pop</button>
+              <button class="chip" data-preset="g7" style="cursor:pointer">🏛️ G7</button>
+              <button class="chip" data-preset="africa" style="cursor:pointer">🌍 Africa</button>
+              <button class="chip" data-preset="asia" style="cursor:pointer">🌏 Asia</button>
+              <button class="chip" data-preset="clear" style="cursor:pointer">✕ Clear</button>
+            </div>
+          </div>
+        </div>
+        <canvas id="line" height="420"></canvas>
+        <div class="hint" style="padding-top:8px">Color matches continent · Hover for values</div>
+      </div>
+    </div>
   </section>
 
   <footer class="footer">Built with vanilla JS + Canvas · No external dependencies · Data: Gapminder</footer>
@@ -2206,6 +2261,8 @@ Zimbabwe,2007,12311143,Africa,43.487,469.7092981
     $("fileName").textContent = isSample ? "No file loaded — using built-in sample" : "Loaded: " + (window.__lastFile || "custom.csv");
     rebuildCountryChips();
     renderAll();
+    // Refresh trends picker if trends tab is visible
+    if ($("view-trends") && $("view-trends").style.display !== "none") buildTrendsPicker();
   }
 
   function rowsForYear(year){
@@ -2611,34 +2668,9 @@ Zimbabwe,2007,12311143,Africa,43.487,469.7092981
     }
   }
 
-  // ---------- Country chips (line chart) ----------
+  // ---------- Country chips (legacy - no-op, replaced by trends picker) ----------
   function rebuildCountryChips(){
-    const box = $("lineCountryList");
-    box.innerHTML = "";
-    const all = state.countries;
-    // Put currently-selected first, then alphabetical
-    const selSet = new Set(state.lineCountries);
-    const ordered = [...state.lineCountries, ...all.filter(c=>!selSet.has(c))];
-    for (const c of ordered){
-      const chip = document.createElement("span");
-      chip.className = "chip" + (selSet.has(c) ? " active":"");
-      const col = lineCountryColor(c);
-      chip.innerHTML = `<span class="dot" style="background:${col}"></span>${escapeHtml(c)}${selSet.has(c)?'<span class="x">✕</span>':""}`;
-      chip.addEventListener("click", ()=>{
-        if (selSet.has(c)){
-          state.lineCountries = state.lineCountries.filter(x=>x!==c);
-        } else {
-          if (state.lineCountries.length >= 5){
-            // replace the oldest (first) to keep max 5
-            state.lineCountries.shift();
-          }
-          state.lineCountries.push(c);
-        }
-        rebuildCountryChips();
-        drawLine();
-      });
-      box.appendChild(chip);
-    }
+    // Old chip wall removed; trends picker handles country selection now
   }
 
   // ---------- Hover handling: scatter ----------
@@ -2803,9 +2835,108 @@ Zimbabwe,2007,12311143,Africa,43.487,469.7092981
     });
   }
 
+  // ---------- Tab switching ----------
+  function wireTabs(){
+    const btns = document.querySelectorAll(".tabbtn");
+    btns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        btns.forEach(b => { b.classList.remove("active"); b.setAttribute("aria-selected","false"); });
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected","true");
+        const tab = btn.dataset.tab;
+        $("view-dashboard").style.display = tab === "dashboard" ? "" : "none";
+        $("view-trends").style.display = tab === "trends" ? "" : "none";
+        if (tab === "trends") { drawLine(); buildTrendsPicker(); }
+      });
+    });
+  }
+
+  // ---------- Trends country picker (searchable dropdown) ----------
+  function buildTrendsPicker(){
+    const selBox = $("trendsSelected");
+    const dd = $("trendsDropdown");
+    const search = $("trendsSearch");
+    if (!selBox || !dd || !search) return;
+
+    // Render selected country chips
+    selBox.innerHTML = "";
+    for (const c of state.lineCountries) {
+      const col = lineCountryColor(c);
+      const chip = document.createElement("span");
+      chip.className = "sel-chip";
+      chip.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${col};display:inline-block"></span>${escapeHtml(c)}<span class="rm" data-c="${escapeHtml(c)}">✕</span>`;
+      chip.querySelector(".rm").addEventListener("click", () => {
+        state.lineCountries = state.lineCountries.filter(x => x !== c);
+        buildTrendsPicker(); drawLine();
+      });
+      selBox.appendChild(chip);
+    }
+
+    // Dropdown items
+    const q = (search.value || "").toLowerCase();
+    dd.innerHTML = "";
+    const filtered = state.countries.filter(c => c.toLowerCase().includes(q));
+    for (const c of filtered) {
+      const col = lineCountryColor(c);
+      const isSel = state.lineCountries.includes(c);
+      const item = document.createElement("div");
+      item.className = "dd-item" + (isSel ? " selected" : "");
+      item.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${col};display:inline-block"></span>${escapeHtml(c)}${isSel ? " ✓" : ""}`;
+      item.addEventListener("click", () => {
+        if (isSel) {
+          state.lineCountries = state.lineCountries.filter(x => x !== c);
+        } else {
+          if (state.lineCountries.length >= 5) state.lineCountries.shift();
+          state.lineCountries.push(c);
+        }
+        buildTrendsPicker(); drawLine();
+      });
+      dd.appendChild(item);
+    }
+
+    // Show dropdown while search has focus
+    search.onfocus = () => { dd.style.display = "block"; };
+    search.onblur = () => { setTimeout(() => { dd.style.display = "none"; }, 200); };
+    search.oninput = () => { buildTrendsPicker(); };
+  }
+
+  // ---------- Presets ----------
+  function wirePresets(){
+    const presets = {
+      top5: () => {
+        const byPop = state.countries.map(c => {
+          const rows = state.byCountry[c] || [];
+          return { c, pop: rows.length ? rows[rows.length-1].pop : 0 };
+        }).sort((a,b) => b.pop - a.pop).slice(0,5);
+        state.lineCountries = byPop.map(o => o.c);
+      },
+      g7: () => {
+        const g7 = ["United States","Japan","India","Brazil","Germany","United Kingdom","France"];
+        state.lineCountries = g7.filter(c => state.byCountry[c]).slice(0,5);
+      },
+      africa: () => {
+        const af = state.countries.filter(c => state.byCountry[c]?.[0]?.continent === "Africa");
+        state.lineCountries = af.slice(0,5);
+      },
+      asia: () => {
+        const as = state.countries.filter(c => state.byCountry[c]?.[0]?.continent === "Asia");
+        state.lineCountries = as.slice(0,5);
+      },
+      clear: () => { state.lineCountries = []; }
+    };
+    document.querySelectorAll("[data-preset]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const fn = presets[btn.dataset.preset];
+        if (fn) { fn(); buildTrendsPicker(); drawLine(); }
+      });
+    });
+  }
+
   // ---------- Init ----------
   function init(){
     wire();
+    wireTabs();
+    wirePresets();
     attachScatterHover();
     attachLineHover();
     // Auto-load embedded full dataset
