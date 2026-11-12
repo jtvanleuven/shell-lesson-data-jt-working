@@ -5,3 +5,5 @@ pwd
 ls -lh
 
 ##add notes
+
+echo "making some changes and I'm not sure that they are going to work"
